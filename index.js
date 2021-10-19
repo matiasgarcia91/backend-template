@@ -6,6 +6,8 @@ const authRouter = require("./routers/auth");
 const authMiddleWare = require("./auth/middleware");
 
 const app = express();
+const cors = corsMiddleWare();
+app.use(cors);
 /**
  * Middlewares: DO NOT REGISTER ANY ROUTERS BEFORE THE MIDDLEWARES
  *
@@ -29,8 +31,6 @@ const app = express();
  * docs: https://expressjs.com/en/resources/middleware/cors.html
  *
  */
-
-app.use(corsMiddleWare());
 
 /**
  * morgan:

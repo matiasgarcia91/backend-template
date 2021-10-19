@@ -21,7 +21,7 @@ router.post("/login", async (req, res, next) => {
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).send({
-        message: "User with that email not found or password incorrect"
+        message: "User with that email not found or password incorrect",
       });
     }
 
@@ -44,8 +44,10 @@ router.post("/signup", async (req, res) => {
     const newUser = await User.create({
       email,
       password: bcrypt.hashSync(password, SALT_ROUNDS),
-      name
+      name,
     });
+
+    /// CREATE A SPACE FOR HIM AS WELL.
 
     delete newUser.dataValues["password"]; // don't send back the password hash
 
