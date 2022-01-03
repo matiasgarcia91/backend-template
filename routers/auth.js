@@ -3,6 +3,8 @@ const { Router } = require("express");
 const { toJWT } = require("../auth/jwt");
 const authMiddleware = require("../auth/middleware");
 const User = require("../models/").user;
+const Space = require("../models").space;
+const Story = require("../models").story;
 const { SALT_ROUNDS } = require("../config/constants");
 
 const router = new Router();
@@ -17,7 +19,10 @@ router.post("/login", async (req, res, next) => {
         .send({ message: "Please provide both email and password" });
     }
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: { email },
+      include: [{ model: Space, include: [Story] }],
+    });
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).send({
@@ -34,7 +39,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-router.post("/signup", async (req, res) => {
+router.post("/signup", async (req, res, next) => {
   const { email, password, name } = req.body;
   if (!email || !password || !name) {
     return res.status(400).send("Please provide an email, password and a name");
@@ -48,20 +53,37 @@ router.post("/signup", async (req, res) => {
     });
 
     /// CREATE A SPACE FOR HIM AS WELL.
+    // description: null
+    // backgroundColor: #ffffff (white)
+    // color: #000000 (black)
+
+    //     title: <MyName>'s space
+    const newSpace = await Space.create({
+      title: `${newUser.name}'s Space`,
+      description: null,
+      backgroundColor: "#ffffff",
+      color: "#000000",
+      userId: newUser.id,
+    });
 
     delete newUser.dataValues["password"]; // don't send back the password hash
 
     const token = toJWT({ userId: newUser.id });
 
-    res.status(201).json({ token, ...newUser.dataValues });
+    res
+      .status(201)
+      .json({
+        token,
+        ...newUser.dataValues,
+        space: { ...newSpace, stories: [] },
+      });
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
       return res
         .status(400)
         .send({ message: "There is an existing account with this email" });
     }
-
-    return res.status(400).send({ message: "Something went wrong, sorry" });
+    next(error);
   }
 });
 
@@ -71,6 +93,7 @@ router.post("/signup", async (req, res) => {
 router.get("/me", authMiddleware, async (req, res) => {
   // don't send back the password hash
   delete req.user.dataValues["password"];
+  // find the space of the guy
   res.status(200).send({ ...req.user.dataValues });
 });
 
