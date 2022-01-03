@@ -6,7 +6,7 @@ const router = new Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    const spaces = await Space.findAll({ include: [Story] });
+    const spaces = await Space.findAll();
     res.send(spaces);
   } catch (e) {
     next(e);

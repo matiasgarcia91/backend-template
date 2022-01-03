@@ -17,12 +17,14 @@ module.exports = {
         {
           title: "My time at Codaisseur",
           description: "A tell all tale",
+          backgroundColor: "#7f8504",
           createdAt: new Date(),
           updatedAt: new Date(),
           userId: user1.id,
         },
         {
           title: "I am a dummy",
+          description: "Some dummy description",
           backgroundColor: "#40C076",
           color: "#EDEDED",
           createdAt: new Date(),
